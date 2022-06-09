@@ -4,7 +4,7 @@
 #include "suniv-f1c100s.dtsi"
 
 / {
-	model = "Planck Pi";
+	model = "Allwinnerck Pi";
 	compatible = "allwinner,suniv-f1c200s",
 			 "allwinner,suniv-f1c100s";
 
@@ -23,6 +23,42 @@
 
 &spi0 {
 	status = "okay";
+	spi-nand@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		compatible = "spi-nand", "allwinner,sun4i-a10-nand";
+		spi-max-frequency = <50000000>;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			partition@0 {
+				label = "u-boot";
+				reg = <0x000000 0x100000>;
+				read-only;
+				};
+ 			partition@100000 {
+				label = "dtb";
+				reg = <0x100000 0x10000>;
+				read-only;
+			};
+			partition@110000 {
+				label = "env";
+				reg = <0x110000 0x100000>;
+				read-only;
+			};
+			partition@210000 {
+				label = "kernel";
+				reg = <0x210000 0x400000>;
+				read-only;
+			};
+			partition@610000 {
+                		label = "rootfs";
+                		reg = <0x610000 0xAF0000>;
+			};
+		};
+	};
 };
 
 &uart0 {
