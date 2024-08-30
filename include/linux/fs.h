@@ -1423,20 +1423,20 @@ struct sb_writers {
 };
 
 struct super_block {
-	struct list_head	s_list;		/* Keep this first */
+	struct list_head	s_list;		/* Keep this first *///连接所有super_block，即这个链表记录系统上所有文件系统的表头，在fs/super.c中定义
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
-	unsigned char		s_blocksize_bits;
-	unsigned long		s_blocksize;
-	loff_t			s_maxbytes;	/* Max file size */
+	unsigned char		s_blocksize_bits;//文件系统中的块大小位数
+	unsigned long		s_blocksize;//块大小
+	loff_t			s_maxbytes;	/* Max file size *///最大文件大小
 	struct file_system_type	*s_type;
-	const struct super_operations	*s_op;
+	const struct super_operations	*s_op;//在文件系统中专门用于管理和操作super_block的操作集
 	const struct dquot_operations	*dq_op;
-	const struct quotactl_ops	*s_qcop;
+	const struct quotactl_ops	*s_qcop;//文件系统的配额操作函数集，文件系统的配额控制操作函数集
 	const struct export_operations *s_export_op;
 	unsigned long		s_flags;
 	unsigned long		s_iflags;	/* internal SB_I_* flags */
 	unsigned long		s_magic;
-	struct dentry		*s_root;
+	struct dentry		*s_root;//根目录的dentry结构体
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
@@ -1453,7 +1453,7 @@ struct super_block {
 #endif
 	struct hlist_bl_head	s_roots;	/* alternate root dentries for NFS */
 	struct list_head	s_mounts;	/* list of mounts; _not_ for fs use */
-	struct block_device	*s_bdev;
+	struct block_device	*s_bdev;//文件系统的块设备信息
 	struct backing_dev_info *s_bdi;
 	struct mtd_info		*s_mtd;
 	struct hlist_node	s_instances;
@@ -1479,7 +1479,7 @@ struct super_block {
 	struct fsnotify_mark_connector __rcu	*s_fsnotify_marks;
 #endif
 
-	char			s_id[32];	/* Informational name */
+	char			s_id[32];	/* Informational name *///文件系统名称
 	uuid_t			s_uuid;		/* UUID */
 
 	unsigned int		s_max_links;
@@ -1497,7 +1497,7 @@ struct super_block {
 	 */
 	const char *s_subtype;
 
-	const struct dentry_operations *s_d_op; /* default d_op for dentries */
+	const struct dentry_operations *s_d_op; /* default d_op for dentries *///目录项操作函数集
 
 	/*
 	 * Saved pool identifier for cleancache (-1 means none)
@@ -1545,10 +1545,10 @@ struct super_block {
 
 	/* s_inode_list_lock protects s_inodes */
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
-	struct list_head	s_inodes;	/* all inodes */
+	struct list_head	s_inodes;	/* all inodes *///文件系统的所有的inode信息
 
 	spinlock_t		s_inode_wblist_lock;
-	struct list_head	s_inodes_wb;	/* writeback inodes */
+	struct list_head	s_inodes_wb;	/* writeback inodes *///所有要会回写的inode结构体
 } __randomize_layout;
 
 /* Helper functions so that in most cases filesystems will
@@ -2219,7 +2219,7 @@ int sync_inode(struct inode *inode, struct writeback_control *wbc);
 int sync_inode_metadata(struct inode *inode, int wait);
 
 struct file_system_type {
-	const char *name;
+	const char *name;//文件系统的名字
 	int fs_flags;
 #define FS_REQUIRES_DEV		1 
 #define FS_BINARY_MOUNTDATA	2
@@ -2230,10 +2230,10 @@ struct file_system_type {
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_description *parameters;
 	struct dentry *(*mount) (struct file_system_type *, int,
-		       const char *, void *);
-	void (*kill_sb) (struct super_block *);
-	struct module *owner;
-	struct file_system_type * next;
+		       const char *, void *);//mount的时候调用
+	void (*kill_sb) (struct super_block *);//当文件系统需要被关闭的时候，调用
+	struct module *owner;//一般直接用THIS_MODULE
+	struct file_system_type * next;//在建立VFS的时候使用
 	struct hlist_head fs_supers;
 
 	struct lock_class_key s_lock_key;

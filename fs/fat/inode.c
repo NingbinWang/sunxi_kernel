@@ -41,21 +41,21 @@
  * fat_boot_sector.
  */
 struct fat_bios_param_block {
-	u16	fat_sector_size;
-	u8	fat_sec_per_clus;
-	u16	fat_reserved;
-	u8	fat_fats;
-	u16	fat_dir_entries;
-	u16	fat_sectors;
+	u16	fat_sector_size;//扇区大小，固定是512字节 
+	u8	fat_sec_per_clus;//簇大小
+	u16	fat_reserved;//fat保留扇区
+	u8	fat_fats;//fat表个数
+	u16	fat_dir_entries;//FAT32为0 不用
+	u16	fat_sectors;//扇区数 FAT32也不用 为0
 	u16	fat_fat_length;
 	u32	fat_total_sect;
 
 	u8	fat16_state;
 	u32	fat16_vol_id;
 
-	u32	fat32_length;
-	u32	fat32_root_cluster;
-	u16	fat32_info_sector;
+	u32	fat32_length;//每个FAT表的扇区数
+	u32	fat32_root_cluster;//根目录所有的第一个簇
+	u16	fat32_info_sector;//fsinfo所在的扇区偏移
 	u8	fat32_state;
 	u32	fat32_vol_id;
 };
@@ -683,7 +683,7 @@ static void fat_set_state(struct super_block *sb,
 		return;
 	}
 
-	bh = sb_bread(sb, 0);
+	bh = sb_bread(sb, 0);//继续读0扇区，主要是为了做标记
 	if (bh == NULL) {
 		fat_msg(sb, KERN_ERR, "unable to read boot sector "
 			"to mark fs as dirty");
@@ -694,7 +694,7 @@ static void fat_set_state(struct super_block *sb,
 
 	if (is_fat32(sbi)) {
 		if (set)
-			b->fat32.state |= FAT_STATE_DIRTY;
+			b->fat32.state |= FAT_STATE_DIRTY;//表明已经挂载
 		else
 			b->fat32.state &= ~FAT_STATE_DIRTY;
 	} else /* fat 16 and 12 */ {
@@ -705,7 +705,7 @@ static void fat_set_state(struct super_block *sb,
 	}
 
 	mark_buffer_dirty(bh);
-	sync_dirty_buffer(bh);
+	sync_dirty_buffer(bh);//同步写入
 	brelse(bh);
 }
 
@@ -1392,7 +1392,7 @@ static int fat_read_root(struct inode *inode)
 	inode->i_generation = 0;
 	inode->i_mode = fat_make_mode(sbi, ATTR_DIR, S_IRWXUGO);
 	inode->i_op = sbi->dir_ops;
-	inode->i_fop = &fat_dir_operations;
+	inode->i_fop = &fat_dir_operations;//文件操作的集合
 	if (is_fat32(sbi)) {
 		MSDOS_I(inode)->i_start = sbi->root_cluster;
 		error = fat_calc_dir_size(inode);
@@ -1606,8 +1606,8 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	struct inode *root_inode = NULL, *fat_inode = NULL;
 	struct inode *fsinfo_inode = NULL;
 	struct buffer_head *bh;
-	struct fat_bios_param_block bpb;
-	struct msdos_sb_info *sbi;
+	struct fat_bios_param_block bpb;//启动扇区的相关信息。就是fat32文件系统中的BPB
+	struct msdos_sb_info *sbi;//文件系统私有信息
 	u16 logical_sector_size;
 	u32 total_sectors, total_clusters, fat_clusters, rootdir_sectors;
 	int debug;
@@ -1621,15 +1621,15 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	 * the filesystem, since we're only just about to mount
 	 * it and have no inodes etc active!
 	 */
-	sbi = kzalloc(sizeof(struct msdos_sb_info), GFP_KERNEL);
+	sbi = kzalloc(sizeof(struct msdos_sb_info), GFP_KERNEL);//申请内存
 	if (!sbi)
 		return -ENOMEM;
-	sb->s_fs_info = sbi;
+	sb->s_fs_info = sbi;//把内存指给私有信息
 
 	sb->s_flags |= SB_NODIRATIME;
 	sb->s_magic = MSDOS_SUPER_MAGIC;
-	sb->s_op = &fat_sops;
-	sb->s_export_op = &fat_export_ops;
+	sb->s_op = &fat_sops;//fat32文件系统的inode操作函数
+	sb->s_export_op = &fat_export_ops;//nfs的操作函数（可以不关心）
 	/*
 	 * fat timestamps are complex and truncated by fat itself, so
 	 * we set 1 here to be fast
@@ -1639,22 +1639,22 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	ratelimit_state_init(&sbi->ratelimit, DEFAULT_RATELIMIT_INTERVAL,
 			     DEFAULT_RATELIMIT_BURST);
 
-	error = parse_options(sb, data, isvfat, silent, &debug, &sbi->options);
+	error = parse_options(sb, data, isvfat, silent, &debug, &sbi->options);//解析文件系统mount传入的值
 	if (error)
 		goto out_fail;
 
-	setup(sb); /* flavour-specific stuff that needs options */
+	setup(sb); /* flavour-specific stuff that needs options */ //这里就是调度到setup
 
 	error = -EIO;
-	sb_min_blocksize(sb, 512);
-	bh = sb_bread(sb, 0);
+	sb_min_blocksize(sb, 512);//设置最小扇区为512,一般FAT32固定为512
+	bh = sb_bread(sb, 0);//读取0扇区 读BS
 	if (bh == NULL) {
 		fat_msg(sb, KERN_ERR, "unable to read boot sector");
 		goto out_fail;
 	}
 
 	error = fat_read_bpb(sb, (struct fat_boot_sector *)bh->b_data, silent,
-		&bpb);
+		&bpb);//读取BPB 需要通过BS来读取
 	if (error == -EINVAL && sbi->options.dos1xfloppy)
 		error = fat_read_static_bpb(sb,
 			(struct fat_boot_sector *)bh->b_data, silent, &bpb);
@@ -1665,8 +1665,8 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	else if (error)
 		goto out_fail;
 
-	logical_sector_size = bpb.fat_sector_size;
-	sbi->sec_per_clus = bpb.fat_sec_per_clus;
+	logical_sector_size = bpb.fat_sector_size;//记录逻辑扇区大小
+	sbi->sec_per_clus = bpb.fat_sec_per_clus;//每个簇对应应该多少个扇区
 
 	error = -EIO;
 	if (logical_sector_size < sb->s_blocksize) {
@@ -1685,7 +1685,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 		}
 
 		/* Verify that the larger boot sector is fully readable */
-		bh_resize = sb_bread(sb, 0);
+		bh_resize = sb_bread(sb, 0);//再读一遍 防止数据被改的情况
 		if (bh_resize == NULL) {
 			fat_msg(sb, KERN_ERR, "unable to read boot sector"
 			       " (logical sector size = %lu)",
@@ -1695,7 +1695,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 		brelse(bh_resize);
 	}
 
-	mutex_init(&sbi->s_lock);
+	mutex_init(&sbi->s_lock);//初始化锁  下面开始对相关信息赋值
 	sbi->cluster_size = sb->s_blocksize * sbi->sec_per_clus;
 	sbi->cluster_bits = ffs(sbi->cluster_size) - 1;
 	sbi->fats = bpb.fat_fats;
@@ -1707,6 +1707,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	sbi->free_clus_valid = 0;
 	sbi->prev_free = FAT_START_ENT;
 	sb->s_maxbytes = 0xffffffff;
+	//限制时间 从 1980/1/1  到 2107/12/31
 	fat_time_fat2unix(sbi, &ts, 0, cpu_to_le16(FAT_DATE_MIN), 0);
 	sb->s_time_min = ts.tv_sec;
 
@@ -1714,7 +1715,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 			  cpu_to_le16(FAT_DATE_MAX), 0);
 	sb->s_time_max = ts.tv_sec;
 
-	if (!sbi->fat_length && bpb.fat32_length) {
+	if (!sbi->fat_length && bpb.fat32_length) {//这里是FAT 32
 		struct fat_boot_fsinfo *fsinfo;
 		struct buffer_head *fsinfo_bh;
 
@@ -1723,19 +1724,19 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 		sbi->fat_length = bpb.fat32_length;
 		sbi->root_cluster = bpb.fat32_root_cluster;
 
-		/* MC - if info_sector is 0, don't multiply by 0 */
+		/* MC - if info_sector is 0, don't multiply by 0 */ //fsinfo一般都是在启动扇区后的第一个扇区，BS是sector0 fsinfo为1
 		sbi->fsinfo_sector = bpb.fat32_info_sector;
 		if (sbi->fsinfo_sector == 0)
 			sbi->fsinfo_sector = 1;
 
-		fsinfo_bh = sb_bread(sb, sbi->fsinfo_sector);
+		fsinfo_bh = sb_bread(sb, sbi->fsinfo_sector);//读FSINFO
 		if (fsinfo_bh == NULL) {
 			fat_msg(sb, KERN_ERR, "bread failed, FSINFO block"
 			       " (sector = %lu)", sbi->fsinfo_sector);
 			goto out_fail;
 		}
 
-		fsinfo = (struct fat_boot_fsinfo *)fsinfo_bh->b_data;
+		fsinfo = (struct fat_boot_fsinfo *)fsinfo_bh->b_data;//这里记录Fsinfo中记录的空闲簇数量以及上一个，空闲簇号
 		if (!IS_FSINFO(fsinfo)) {
 			fat_msg(sb, KERN_WARNING, "Invalid FSINFO signature: "
 			       "0x%08x, 0x%08x (sector = %lu)",
@@ -1751,18 +1752,18 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 
 		brelse(fsinfo_bh);
 	}
-
+//开始找目录存放的地址与数据开始存放的地址
 	/* interpret volume ID as a little endian 32 bit integer */
 	if (is_fat32(sbi))
 		sbi->vol_id = bpb.fat32_vol_id;
 	else /* fat 16 or 12 */
 		sbi->vol_id = bpb.fat16_vol_id;
 
-	sbi->dir_per_block = sb->s_blocksize / sizeof(struct msdos_dir_entry);
-	sbi->dir_per_block_bits = ffs(sbi->dir_per_block) - 1;
+	sbi->dir_per_block = sb->s_blocksize / sizeof(struct msdos_dir_entry);//计算一个block可以存放多少个目录项
+	sbi->dir_per_block_bits = ffs(sbi->dir_per_block) - 1;//计算位数
 
-	sbi->dir_start = sbi->fat_start + sbi->fats * sbi->fat_length;
-	sbi->dir_entries = bpb.fat_dir_entries;
+	sbi->dir_start = sbi->fat_start + sbi->fats * sbi->fat_length;//计算目录开始的地址，就是FAT表后面
+	sbi->dir_entries = bpb.fat_dir_entries;//FAT32为0
 	if (sbi->dir_entries & (sbi->dir_per_block - 1)) {
 		if (!silent)
 			fat_msg(sb, KERN_ERR, "bogus number of directory entries"
@@ -1771,13 +1772,13 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	}
 
 	rootdir_sectors = sbi->dir_entries
-		* sizeof(struct msdos_dir_entry) / sb->s_blocksize;
-	sbi->data_start = sbi->dir_start + rootdir_sectors;
+		* sizeof(struct msdos_dir_entry) / sb->s_blocksize;//计算根目录开始的地方
+	sbi->data_start = sbi->dir_start + rootdir_sectors;//计算数据存放的开始的地方
 	total_sectors = bpb.fat_sectors;
 	if (total_sectors == 0)
 		total_sectors = bpb.fat_total_sect;
 
-	total_clusters = (total_sectors - sbi->data_start) / sbi->sec_per_clus;
+	total_clusters = (total_sectors - sbi->data_start) / sbi->sec_per_clus;//计算总的簇数
 
 	if (!is_fat32(sbi))
 		sbi->fat_bits = (total_clusters > MAX_FAT12) ? 16 : 12;
@@ -1788,8 +1789,9 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	else /* fat 16 or 12 */
 		sbi->dirty = bpb.fat16_state & FAT_STATE_DIRTY;
 
+//开始进行相应的校验工作
 	/* check that FAT table does not overflow */
-	fat_clusters = calc_fat_clusters(sb);
+	fat_clusters = calc_fat_clusters(sb); //通过
 	total_clusters = min(total_clusters, fat_clusters - FAT_START_ENT);
 	if (total_clusters > max_fat(sb)) {
 		if (!silent)
@@ -1799,7 +1801,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	}
 
 	sbi->max_cluster = total_clusters + FAT_START_ENT;
-	/* check the free_clusters, it's not necessarily correct */
+	/* check the free_clusters, it's not necessarily correct */ //进行空簇的验证与数量的验证
 	if (sbi->free_clusters != -1 && sbi->free_clusters > total_clusters)
 		sbi->free_clusters = -1;
 	/* check the prev_free, it's not necessarily correct */
@@ -1808,9 +1810,9 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 		sbi->prev_free = FAT_START_ENT;
 
 	/* set up enough so that it can read an inode */
-	fat_hash_init(sb);
+	fat_hash_init(sb);//初始化hash
 	dir_hash_init(sb);
-	fat_ent_access_init(sb);
+	fat_ent_access_init(sb);//提供操作FAT目录项的操作
 
 	/*
 	 * The low byte of the first FAT entry must have the same value as
@@ -1843,19 +1845,19 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 	}
 
 	error = -ENOMEM;
-	fat_inode = new_inode(sb);
+	fat_inode = new_inode(sb);//申请一个新的inode节点
 	if (!fat_inode)
 		goto out_fail;
 	sbi->fat_inode = fat_inode;
 
-	fsinfo_inode = new_inode(sb);
+	fsinfo_inode = new_inode(sb);//申请fsinfo的inode节点，节点号为MSDOS_FSINFO_INO 2 
 	if (!fsinfo_inode)
 		goto out_fail;
 	fsinfo_inode->i_ino = MSDOS_FSINFO_INO;
 	sbi->fsinfo_inode = fsinfo_inode;
 	insert_inode_hash(fsinfo_inode);
 
-	root_inode = new_inode(sb);
+	root_inode = new_inode(sb);//申请root的inode节点，节点为 MSDOS_ROOT_INO 1
 	if (!root_inode)
 		goto out_fail;
 	root_inode->i_ino = MSDOS_ROOT_INO;
@@ -1881,10 +1883,9 @@ int fat_fill_super(struct super_block *sb, void *data, int silent, int isvfat,
 					"mounting with \"discard\" option, but "
 					"the device does not support discard");
 	}
-
-	fat_set_state(sb, 1, 0);
+	fat_set_state(sb, 1, 0);//设置文件系统的状态为挂载状态
 	return 0;
-
+//以下为出错处理
 out_invalid:
 	error = -EINVAL;
 	if (!silent)

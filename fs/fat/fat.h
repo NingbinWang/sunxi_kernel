@@ -61,13 +61,13 @@ struct fat_mount_options {
  * MS-DOS file system in-core superblock data
  */
 struct msdos_sb_info {
-	unsigned short sec_per_clus;  /* sectors/cluster */
+	unsigned short sec_per_clus;  /* sectors/cluster */ 
 	unsigned short cluster_bits;  /* log2(cluster_size) */
 	unsigned int cluster_size;    /* cluster size */
 	unsigned char fats, fat_bits; /* number of FATs, FAT bits (12,16 or 32) */
-	unsigned short fat_start;
+	unsigned short fat_start;//fat表开始的扇区
 	unsigned long fat_length;     /* FAT start & length (sec.) */
-	unsigned long dir_start;
+	unsigned long dir_start;//根目录开始
 	unsigned short dir_entries;   /* root dir start & entries */
 	unsigned long data_start;     /* first data sector */
 	unsigned long max_cluster;    /* maximum cluster number */
@@ -76,29 +76,30 @@ struct msdos_sb_info {
 	struct mutex fat_lock;
 	struct mutex nfs_build_inode_lock;
 	struct mutex s_lock;
-	unsigned int prev_free;      /* previously allocated cluster number */
+	unsigned int prev_free;      /* previously allocated cluster number */ //上一个空闲的簇号，申请空间的时候会基于这个簇号
+//往后找，如果找不到就从头开始找，所以运行时间越长FAT文件系统的sui片化变的严重
 	unsigned int free_clusters;  /* -1 if undefined */
 	unsigned int free_clus_valid; /* is free_clusters valid? */
 	struct fat_mount_options options;
 	struct nls_table *nls_disk;   /* Codepage used on disk */
 	struct nls_table *nls_io;     /* Charset used for input and display */
-	const void *dir_ops;	      /* Opaque; default directory operations */
+	const void *dir_ops;	      /* Opaque; default directory operations */ //用于处理目录的inode
 	int dir_per_block;	      /* dir entries per block */
 	int dir_per_block_bits;	      /* log2(dir_per_block) */
 	unsigned int vol_id;		/*volume ID*/
 
 	int fatent_shift;
-	const struct fatent_operations *fatent_ops;
+	const struct fatent_operations *fatent_ops;//FAT文件系统的处理集he
 	struct inode *fat_inode;
 	struct inode *fsinfo_inode;
 
 	struct ratelimit_state ratelimit;
 
 	spinlock_t inode_hash_lock;
-	struct hlist_head inode_hashtable[FAT_HASH_SIZE];
+	struct hlist_head inode_hashtable[FAT_HASH_SIZE]; //inode的hash表
 
 	spinlock_t dir_hash_lock;
-	struct hlist_head dir_hashtable[FAT_HASH_SIZE];
+	struct hlist_head dir_hashtable[FAT_HASH_SIZE];//目录的hash表
 
 	unsigned int dirty;           /* fs state before mount */
 	struct rcu_head rcu;

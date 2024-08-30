@@ -164,8 +164,9 @@
 		clock-names = "xclk";
 		assigned-clocks = <&clk_out>;
 		assigned-clock-rates = <24000000>;
+		rotation = <0>;
+		//reset-gpios = <&pio 0 1 GPIO_ACTIVE_LOW>;
 		status = "okay";
-
 		port {
 			ov5640_ep: endpoint {
 				remote-endpoint = <&csi0_ep>;
