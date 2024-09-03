@@ -272,7 +272,8 @@ static inline struct v4l2_subdev *ctrl_to_sd(struct v4l2_ctrl *ctrl)
  * over i2c.
  */
 /* YUV422 UYVY VGA@15fps */
-static const struct reg_value ov5640_init_setting_15fps_VGA[] = {
+static const struct reg_value ov5640_init_setting_30fps_VGA[] = {
+/*
 	{0x3103, 0x11, 0, 0}, // system clock from pad, bit[1]
 	{0x3008, 0x82, 0, 5}, // software reset, bit[7]
 	{0x3008, 0x42, 0, 0}, // software power down, bit[6]
@@ -379,9 +380,9 @@ static const struct reg_value ov5640_init_setting_15fps_VGA[] = {
     {0x530a, 0x30, 0, 0}, {0x530b, 0x04, 0, 0}, {0x530c, 0x06, 0, 0}, 
 
 	{0x5025, 0x00, 0, 0}, {0x3008, 0x02, 0, 0}, {0x3c00, 0x04, 0, 300},
+*/
 
-
-	/*
+	
 	{0x3103, 0x11, 0, 0}, {0x3008, 0x82, 0, 5}, {0x3008, 0x42, 0, 0},
     {0x3103, 0x03, 0, 0}, {0x3630, 0x36, 0, 0},
     {0x3631, 0x0e, 0, 0}, {0x3632, 0xe2, 0, 0}, {0x3633, 0x12, 0, 0},
@@ -463,7 +464,7 @@ static const struct reg_value ov5640_init_setting_15fps_VGA[] = {
 	{0x5025, 0x00, 0, 0}, {0x3a0f, 0x30, 0, 0}, {0x3a10, 0x28, 0, 0},
 	{0x3a1b, 0x30, 0, 0}, {0x3a1e, 0x26, 0, 0}, {0x3a11, 0x60, 0, 0},
 	{0x3a1f, 0x14, 0, 0}, {0x3008, 0x02, 0, 0}, {0x3c00, 0x04, 0, 300},
-	*/
+
 };
 
 static const struct reg_value ov5640_setting_VGA_640_480[] = {
@@ -688,8 +689,8 @@ static const struct reg_value ov5640_setting_QSXGA_2592_1944[] = {
 /* power-on sensor init reg table */
 static const struct ov5640_mode_info ov5640_mode_init_data = {
 	0, SUBSAMPLING, 640, 1896, 480, 984,
-	ov5640_init_setting_15fps_VGA,
-	ARRAY_SIZE(ov5640_init_setting_15fps_VGA),
+	ov5640_init_setting_30fps_VGA,
+	ARRAY_SIZE(ov5640_init_setting_30fps_VGA),
 };
 
 static const struct ov5640_mode_info
@@ -3130,8 +3131,8 @@ static int ov5640_probe(struct i2c_client *client)
 	 * YUV422 UYVY VGA@30fps
 	 */
 	fmt = &sensor->fmt;
-	//fmt->code = MEDIA_BUS_FMT_YUYV8_2X8;
-	fmt->code = MEDIA_BUS_FMT_UYVY8_2X8;
+	fmt->code = MEDIA_BUS_FMT_YUYV8_2X8;
+	//fmt->code = MEDIA_BUS_FMT_UYVY8_2X8;
 	fmt->colorspace = V4L2_COLORSPACE_SRGB;
 	fmt->ycbcr_enc = V4L2_MAP_YCBCR_ENC_DEFAULT(fmt->colorspace);
 	fmt->quantization = V4L2_QUANTIZATION_FULL_RANGE;
@@ -3142,12 +3143,12 @@ static int ov5640_probe(struct i2c_client *client)
 	fmt->height = 480;
 	fmt->field = V4L2_FIELD_NONE;
 	sensor->frame_interval.numerator = 1;
-	//sensor->frame_interval.denominator = ov5640_framerates[OV5640_15_FPS];
-	//sensor->current_fr = OV5640_15_FPS;
+	sensor->frame_interval.denominator = ov5640_framerates[OV5640_30_FPS];
+	sensor->current_fr = OV5640_30_FPS;
 	//sensor->current_mode =
 	//	&ov5640_mode_data[OV5640_MODE_720P_1280_720];
-	sensor->frame_interval.denominator = ov5640_framerates[OV5640_15_FPS];
-	sensor->current_fr = OV5640_15_FPS;
+	//sensor->frame_interval.denominator = ov5640_framerates[OV5640_15_FPS];
+	//sensor->current_fr = OV5640_15_FPS;
 	sensor->current_mode =
 		&ov5640_mode_data[OV5640_MODE_VGA_640_480];
 	sensor->last_mode = sensor->current_mode;
