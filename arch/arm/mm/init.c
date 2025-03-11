@@ -319,7 +319,7 @@ void __init bootmem_init(void)
 	 * the sparse mem_map arrays initialized by sparse_init()
 	 * for memmap_init_zone(), otherwise all PFNs are invalid.
 	 */
-	zone_sizes_init(min_low_pfn, max_low_pfn, max_pfn);
+	zone_sizes_init(min_low_pfn, max_low_pfn, max_pfn);//初始化zone的入口
 }
 
 /*

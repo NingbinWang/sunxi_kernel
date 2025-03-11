@@ -1907,8 +1907,8 @@ static unsigned long __init free_low_memory_core_early(void)
 	 *  low ram will be on Node1
 	 */
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
-				NULL)
-		count += __free_memory_core(start, end);
+				NULL)//遍历所有的memblock块
+		count += __free_memory_core(start, end);//将内存块进行传递
 
 	return count;
 }

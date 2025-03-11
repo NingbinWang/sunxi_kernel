@@ -626,9 +626,9 @@ asmlinkage __visible void __init start_kernel(void)
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
-	mm_init();
+	mm_init();//这里是可以打印内存分布的入口
 
-	ftrace_init();
+	ftrace_init();//这里是ftrace的初始化入口
 
 	/* trace_printk can be enabled here */
 	early_trace_init();

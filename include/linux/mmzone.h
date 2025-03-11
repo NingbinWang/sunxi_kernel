@@ -512,7 +512,7 @@ struct zone {
 	ZONE_PADDING(_pad1_)
 
 	/* free areas of different sizes */
-	struct free_area	free_area[MAX_ORDER];
+	struct free_area	free_area[MAX_ORDER];//从zone这里拿到相应的order
 
 	/* zone flags, see below */
 	unsigned long		flags;
