@@ -767,6 +767,17 @@ config I2C_MV64XXX
 	  This driver can also be built as a module.  If so, the module
 	  will be called i2c-mv64xxx.
 
+config I2C_SUNXI
+	tristate "Sunxi I2C Controller"
+	depends on  PLAT_ORION || ARCH_SUNXI || ARCH_MVEBU
+	help
+	  If you say yes to this option, support will be included for the
+	  built-in I2C interface on the Marvell 64xxx line of host bridges.
+	  This driver is also used for Allwinner SoCs I2C controllers.
+
+	  This driver can also be built as a module.  If so, the module
+	  will be called i2c-Sunxi.
+
 config I2C_MXS
 	tristate "Freescale i.MX28 I2C interface"
 	depends on SOC_IMX28
