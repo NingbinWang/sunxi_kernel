@@ -93,7 +93,7 @@ static inline struct uart_port *uart_port_check(struct uart_state *state)
  * This routine is used by the interrupt handler to schedule processing in
  * the software interrupt portion of the driver.
  */
-void uart_write_wakeup(struct uart_port *port)
+void uart_write_wakeup(struct uart_port *port)//唤醒上层因串口端口写数据而堵塞的进程，通常在串口发送中断处理函数中调用该函数
 {
 	struct uart_state *state = port->state;
 	/*
@@ -337,7 +337,7 @@ static void uart_shutdown(struct tty_struct *tty, struct uart_state *state)
  */
 void
 uart_update_timeout(struct uart_port *port, unsigned int cflag,
-		    unsigned int baud)
+		    unsigned int baud) //用于更新（设置）串口FIFO超出时间
 {
 	unsigned int bits;
 
@@ -397,7 +397,7 @@ EXPORT_SYMBOL(uart_update_timeout);
  */
 unsigned int
 uart_get_baud_rate(struct uart_port *port, struct ktermios *termios,
-		   struct ktermios *old, unsigned int min, unsigned int max)
+		   struct ktermios *old, unsigned int min, unsigned int max) //通过解码termios结构体来获取指定串口的波特率
 {
 	unsigned int try;
 	unsigned int baud;
@@ -486,7 +486,7 @@ EXPORT_SYMBOL(uart_get_baud_rate);
  *	Calculate the uart clock divisor for the port.
  */
 unsigned int
-uart_get_divisor(struct uart_port *port, unsigned int baud)
+uart_get_divisor(struct uart_port *port, unsigned int baud)//用于计算某一波特率的串口时钟分频数(串口波特率除数）
 {
 	unsigned int quot;
 
@@ -1942,7 +1942,7 @@ static int uart_proc_show(struct seq_file *m, void *v)
  */
 void uart_console_write(struct uart_port *port, const char *s,
 			unsigned int count,
-			void (*putchar)(struct uart_port *, int))
+			void (*putchar)(struct uart_port *, int)) //用于向串口端口写一控制台信息
 {
 	unsigned int i;
 
@@ -2174,7 +2174,7 @@ static int serial_match_port(struct device *dev, void *data)
 	return dev->devt == devt; /* Actually, only one tty per port */
 }
 
-int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
+int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport) //用于挂起特定的串口端口
 {
 	struct uart_state *state = drv->state + uport->line;
 	struct tty_port *port = &state->port;
@@ -2236,7 +2236,7 @@ unlock:
 	return 0;
 }
 
-int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
+int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)//用于恢复某一已挂起的串口
 {
 	struct uart_state *state = drv->state + uport->line;
 	struct tty_port *port = &state->port;
@@ -2546,7 +2546,7 @@ static const struct tty_port_operations uart_port_ops = {
  *	drv->port should be NULL, and the per-port structures should be
  *	registered using uart_add_one_port after this call has succeeded.
  */
-int uart_register_driver(struct uart_driver *drv)
+int uart_register_driver(struct uart_driver *drv) //uart_register_driver用于串口驱动uart_driver注册到内核(串口核心层）中，通常在模块初始化函数调用该函数。
 {
 	struct tty_driver *normal;
 	int i, retval = -ENOMEM;
@@ -2613,7 +2613,7 @@ out:
  *	uart_remove_one_port() if it registered them with uart_add_one_port().
  *	(ie, drv->port == NULL)
  */
-void uart_unregister_driver(struct uart_driver *drv)
+void uart_unregister_driver(struct uart_driver *drv) //用于注销我们已注册的uart_driver,通常在模块卸载函数调用该函数
 {
 	struct tty_driver *p = drv->tty_driver;
 	unsigned int i;
@@ -2814,7 +2814,7 @@ static const struct attribute_group tty_dev_attr_group = {
  *	level uart drivers to expand uart_port, rather than having yet
  *	more levels of structures.
  */
-int uart_add_one_port(struct uart_driver *drv, struct uart_port *uport)
+int uart_add_one_port(struct uart_driver *drv, struct uart_port *uport) //用于为串口驱动添加一个串口端口，通常在探测到设备后(驱动的设备probe方法)调用该函数
 {
 	struct uart_state *state;
 	struct tty_port *port;
@@ -2917,7 +2917,7 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *uport)
  *	core driver.  No further calls will be made to the low-level code
  *	for this port.
  */
-int uart_remove_one_port(struct uart_driver *drv, struct uart_port *uport)
+int uart_remove_one_port(struct uart_driver *drv, struct uart_port *uport)//用于删除一个已经添加到串口驱动中的串口端口，通常在驱动卸载时调用该函数
 {
 	struct uart_state *state = drv->state + uport->line;
 	struct tty_port *port = &state->port;
@@ -3093,7 +3093,7 @@ EXPORT_SYMBOL_GPL(uart_handle_cts_change);
  * @flag: flag for the character (see TTY_NORMAL and friends)
  */
 void uart_insert_char(struct uart_port *port, unsigned int status,
-		 unsigned int overrun, unsigned int ch, unsigned int flag)
+		 unsigned int overrun, unsigned int ch, unsigned int flag) //用于向uart层插入一个字符
 {
 	struct tty_port *tport = &port->state->port;
 
@@ -3106,7 +3106,7 @@ void uart_insert_char(struct uart_port *port, unsigned int status,
 	 * it doesn't affect the current character.
 	 */
 	if (status & ~port->ignore_status_mask & overrun)
-		if (tty_insert_flip_char(tport, 0, TTY_OVERRUN) == 0)
+		if (tty_insert_flip_char(tport, 0, TTY_OVERRUN) == 0) //发生overrun后插入一个字节00
 			++port->icount.buf_overrun;
 }
 EXPORT_SYMBOL_GPL(uart_insert_char);

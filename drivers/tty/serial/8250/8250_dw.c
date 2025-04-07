@@ -385,7 +385,7 @@ static void dw8250_quirks(struct uart_port *p, struct dw8250_data *data)
 static int dw8250_probe(struct platform_device *pdev)
 {
 	struct uart_8250_port uart = {}, *up = &uart;
-	struct resource *regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	struct resource *regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);//此处就能拿到设备树中的reg
 	struct uart_port *p = &up->port;
 	struct device *dev = &pdev->dev;
 	struct dw8250_data *data;
@@ -403,9 +403,9 @@ static int dw8250_probe(struct platform_device *pdev)
 		return irq;
 
 	spin_lock_init(&p->lock);
-	p->mapbase	= regs->start;
+	p->mapbase	= regs->start;//设备树的基地址
 	p->irq		= irq;
-	p->handle_irq	= dw8250_handle_irq;
+	p->handle_irq	= dw8250_handle_irq;//硬件中断服务函数
 	p->pm		= dw8250_do_pm;
 	p->type		= PORT_8250;
 	p->flags	= UPF_SHARE_IRQ | UPF_FIXED_PORT;
@@ -631,7 +631,7 @@ static const struct dev_pm_ops dw8250_pm_ops = {
 };
 
 static const struct of_device_id dw8250_of_match[] = {
-	{ .compatible = "snps,dw-apb-uart" },
+	{ .compatible = "snps,dw-apb-uart" },//跟设备树匹配
 	{ .compatible = "cavium,octeon-3860-uart" },
 	{ .compatible = "marvell,armada-38x-uart" },
 	{ .compatible = "renesas,rzn1-uart" },

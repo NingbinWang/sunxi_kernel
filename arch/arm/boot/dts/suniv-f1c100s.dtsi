@@ -328,11 +328,18 @@
 			uart0_pe_pins: uart0-pe-pins {
 				pins = "PE0", "PE1";
 				function = "uart0";
+				bias-pull-up;
 			};
 
 			spi0_pins: spi0-pins {
 				pins = "PC0", "PC1", "PC2", "PC3";
 				function = "spi0";
+				bias-pull-up;
+			};
+			
+			spi1_pins: spi1-pins {
+				pins = "PA0", "PA1", "PA2", "PA3";
+				function = "spi1";
 				bias-pull-up;
 			};
 
@@ -392,13 +399,7 @@
 				function = "rtp";
 			};
 
-			lcd_rgb565_pins: lcd-rgb565-pins {
-				pins = "PD1", "PD2", "PD3", "PD4", "PD5",
-					"PD6", "PD7", "PD8", "PD9", "PD10", "PD11", 
-					"PD13", "PD14", "PD15", "PD16", "PD17",
-					"PD18", "PD19", "PD20", "PD21";
-				function = "lcd";
-			};
+
 		};
 
 		timer@1c20c00 {
@@ -476,7 +477,6 @@
 			pinctrl-names = "default";
 			status = "disabled";
 		};
-
 		uart0: serial@1c25000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x01c25000 0x400>;

@@ -16,7 +16,6 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
-
 		stdout-path = "serial0:115200n8";
 	};
 };
@@ -57,15 +56,17 @@
 	};
 };
 
-&uart0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&uart0_pe_pins>;
-	// status = "okay";
-};
+
 
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart1_pa_pins>;
+	status = "okay";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pe_pins>;
 	status = "okay";
 };
 
@@ -97,19 +98,19 @@
 };
 
 &de {
-	status = "okay";
+	status = "disabled";
 };
 
 &fe0 {
-	status = "okay";
+	status = "disabled";
 };
 
 &be0 {
-	status = "okay";
+	status = "disabled";
 };
 
 &tve0 {
-	status = "okay";
+	status = "disabled";
 };
 
 
@@ -127,7 +128,7 @@
 &i2c0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c0_pd_pins>;
-	status = "okay";
+	status = "disabled";
 
 	ov2640: camera@30 {
 		compatible = "ovti,ov2640";
@@ -161,7 +162,7 @@
 		assigned-clock-rates = <24000000>;
 		rotation = <0>;
 		//reset-gpios = <&pio 0 1 GPIO_ACTIVE_LOW>;
-		status = "okay";
+		status = "disabled";
 		port {
 			ov5640_ep: endpoint {
 				remote-endpoint = <&csi0_ep>;
@@ -178,7 +179,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&csi0_pins>;
 	packed-format;
-	status = "okay";
+	status = "disabled";
 
 	port {
 		csi0_ep: endpoint {

@@ -105,7 +105,7 @@ typedef unsigned int __bitwise upstat_t;
 struct uart_port {
 	spinlock_t		lock;			/* port lock */
 	unsigned long		iobase;			/* in/out[bwl] */
-	unsigned char __iomem	*membase;		/* read/write[bwl] */
+	unsigned char __iomem	*membase;		/* read/write[bwl] */ //串口的iomem
 	unsigned int		(*serial_in)(struct uart_port *, int);
 	void			(*serial_out)(struct uart_port *, int, int);
 	void			(*set_termios)(struct uart_port *,

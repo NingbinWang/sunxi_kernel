@@ -1090,7 +1090,7 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
 		}
 
 		/* Initialise interrupt backoff work if required */
-		if (up->overrun_backoff_time_ms > 0) {
+		if (up->overrun_backoff_time_ms > 0) { //这里的working是需要设备树去开启的
 			uart->overrun_backoff_time_ms =
 				up->overrun_backoff_time_ms;
 			INIT_DELAYED_WORK(&uart->overrun_backoff,
